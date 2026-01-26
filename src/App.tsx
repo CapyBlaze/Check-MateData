@@ -47,7 +47,7 @@ function App() {
 
             {/* File Upload & Treatment */}
             <div 
-                className={`flex flex-row transition-transform duration-500 ease-in-out
+                className={`flex flex-row transition-transform duration-500 ease-in-out delay-500
                     ${file === null ? 'translate-x-1/4' : '-translate-x-1/4'}
                 `}
             >

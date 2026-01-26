@@ -37,7 +37,7 @@ export function ErrorPopup({ message, onClose }: ErrorPopupProps) {
                 }
             `}
         >
-            <div className="glass rounded-2xl p-4 pr-12 max-w-sm border border-red-500/30 shadow-2xl"
+            <div className="glass rounded-xl p-4 pr-12 max-w-sm border border-red-500/30 shadow-2xl"
                 style={{ boxShadow: '0 8px 32px rgba(239, 68, 68, 0.3)' }}
             >
                 <div className="flex items-start gap-3">
@@ -49,7 +49,7 @@ export function ErrorPopup({ message, onClose }: ErrorPopupProps) {
                     </div>
 
                     {/* Content */}
-                    <div>
+                    <div className='w-52'>
                         <h4 className="text-white font-semibold text-sm">Erreur</h4>
                         <p className="text-gray-400 text-sm mt-0.5">{message}</p>
                     </div>
