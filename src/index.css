@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+
+@theme {
+    --color-bg-start: #0f172b;
+    --color-bg-middle: #3c0366;
+    --color-bg-end: #0f172b;
+    --color-accent: #8b5cf6cc;
+    --color-accent-2: #8b5cf64d;
+}
+
+
 :root {
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
@@ -24,4 +34,86 @@ body {
 
     min-width: 320px;
     min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+::selection {
+    background-color: var(--color-accent);
+    color: #ffffff;
+}
+
+::-moz-selection {
+    background-color: var(--color-accent);
+    color: #ffffff;
+}
+
+.glass {
+    background: #191919b3;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.file-drop-zone {
+    transition: all 0.3s ease;
+    position: relative;
+    border: 2px dashed;
+    border-radius: 0 0 1rem 1rem;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-color: #4b5563;
+}
+
+.file-drop-zone:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 30px var(--color-accent-2);
+}
+
+.chess-piece {
+    position: absolute;
+    animation: fall linear infinite;
+    pointer-events: none;
+    user-select: none;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+    transform: translateY(-100%);
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes shrink {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+.noSelect {
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }

@@ -3,14 +3,11 @@ import { Chess } from "chess.js";
 
 
 
-const MAX_SIZE_FILE = 50 * 1024; // 50 Ko
-
 export interface EncryptionProgress {
-    stage?: 'ERROR' | 'COMPRESSING' | 'ENCODING' | 'ENDED';
+    stage?: 'COMPRESSING' | 'ENCODING' | 'ENDED';
     totalBytes?: number;
     remainingByte?: number;
     remainingPercentage?: number;
-    error?: 'EMPTY_FILE' | 'FILE_TOO_LARGE' | 'READING_ERROR';
 }
 
 
@@ -19,23 +16,6 @@ export async function encryptFile(
     onProgress?: (output: EncryptionProgress) => void
 
 ): Promise<string[]> {
-    
-    if (file.size === 0) {
-        onProgress?.({
-            stage: 'ERROR',
-            error: 'EMPTY_FILE'
-        });
-        return [];
-    }
-    
-    if (file.size > MAX_SIZE_FILE) { 
-        onProgress?.({ 
-            stage: 'ERROR',
-            error: 'FILE_TOO_LARGE'
-        });
-        return [];
-    };
-
     onProgress?.({
         stage: 'COMPRESSING',
         remainingPercentage: 0
@@ -52,15 +32,9 @@ export async function encryptFile(
         if (compressed.length < uint8Input.length) dataFile = compressed;
         else                                       dataFile = uint8Input;
 
-        
     } catch {
-        onProgress?.({
-            stage: 'ERROR',
-            error: 'READING_ERROR'
-        });
         return [];
     }
-
 
 
 
