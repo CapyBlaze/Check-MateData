@@ -3,20 +3,12 @@ import { encryptFile, type EncryptionProgress } from "./../Services/encryptFile"
 import { createZip } from "./../Services/createZip";
 import { formatFileSize } from "../Utils/formatFileSize";
 
-// import BriefcaseIcon from './briefcase.svg';
-// import Checkmark from './checkmark.svg';
-// import DocumentLock from './documentLock.svg';
-
-const steps = [
-    { id: 'COMPRESSING', label: 'Compression', icon: '📦' },
-    { id: 'ENCODING', label: 'Encodage', icon: '🔐' },
-    { id: 'ENDED', label: 'Terminé', icon: '✅' },
-];
 
 interface TreatmentFileOtherProps {
     file: File;
     onError?: (message: string) => void;
 }
+
 
 export function TreatmentFileOther({ 
     file, 
@@ -62,19 +54,13 @@ export function TreatmentFileOther({
         if (dataEncrypt.length > 0) createZip(dataEncrypt, fileName);
     };
 
-    const getCurrentStepIndex = () => {
-        if (!encryptionProgress) return -1;
-        return steps.findIndex(s => s.id === encryptionProgress.stage);
-    };
 
 
-
-    const currentStepIndex = getCurrentStepIndex();
     const progress = encryptionProgress?.remainingPercentage ?? 0;
     const isCompleted = encryptionProgress?.stage === 'ENDED';
 
     return (
-        <div className="encryption-container w-full max-w-md p-6">
+        <div className="w-full max-w-md p-6">
             {/* File Info Card */}
             <div className="file-info-card glass rounded-xl p-4 mb-6">
                 <div className="flex items-center gap-4">
@@ -92,52 +78,6 @@ export function TreatmentFileOther({
                 </div>
             </div>
 
-            {/* Steps Indicator */}
-            <div className="steps-container mb-6">
-                <div className="flex justify-between relative">
-                    {/* Progress Line Background */}
-                    <div className="steps-line-bg"></div>
-                    {/* Progress Line Active */}
-                    <div 
-                        className="steps-line-active"
-                        style={{ 
-                            width: `${currentStepIndex >= 0 ? (currentStepIndex / (steps.length - 1)) * 100 : 0}%` 
-                        }}
-                    ></div>
-                    
-                    {steps.map((step, index) => {
-                        const isActive = currentStepIndex === index;
-                        const isPast = currentStepIndex > index;
-                        const isFuture = currentStepIndex < index;
-                        
-                        return (
-                            <div key={step.id} className="step-item">
-                                <div className={`step-circle ${
-                                    isPast ? 'step-completed' : 
-                                    isActive ? 'step-active' : 
-                                    'step-pending'
-                                }`}>
-                                    {isPast ? (
-                                        <span className="text-white text-sm">✓</span>
-                                    ) : (
-                                        <span className={`text-lg ${isFuture ? 'opacity-40' : ''}`}>
-                                            {step.icon}
-                                        </span>
-                                    )}
-                                </div>
-                                <span className={`step-label ${
-                                    isActive ? 'text-white font-medium' : 
-                                    isPast ? 'text-green-400' : 
-                                    'text-gray-500'
-                                }`}>
-                                    {step.label}
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
             {/* Progress Section */}
             <div className="progress-section glass rounded-xl p-5 mb-6">
                 {/* Animated Chess Piece */}
@@ -147,55 +87,59 @@ export function TreatmentFileOther({
                     </div>
                 </div>
 
-                {/* Status Text */}
-                <div className="text-center mb-4">
-                    <p className="text-white text-lg font-medium">
-                        {!encryptionProgress && 'Initialisation...'}
-                        {encryptionProgress?.stage === 'COMPRESSING' && 'Compression en cours...'}
-                        {encryptionProgress?.stage === 'ENCODING' && 'Encodage des données...'}
-                        {encryptionProgress?.stage === 'ENDED' && 'Chiffrement terminé !'}
-                    </p>
-                    {encryptionProgress?.stage === 'ENCODING' && (
-                        <p className="text-accent text-2xl font-bold mt-1">
-                            {progress.toFixed(1)}%
-                        </p>
-                    )}
-                </div>
 
-                {/* Progress Bar */}
-                <div className="progress-bar-container">
-                    <div className="progress-bar-bg">
-                        <div 
-                            className={`progress-bar-fill ${isCompleted ? 'completed' : ''}`}
-                            style={{ 
-                                width: isCompleted ? '100%' : 
-                                       encryptionProgress?.stage === 'COMPRESSING' ? '15%' :
-                                       `${Math.max(15, progress)}%` 
-                            }}
-                        ></div>
-                    </div>
-                </div>
+                {!isCompleted && (
+                    <>
+                        {/* Status Text */}
+                        <div className="text-center mb-4">
+                            <p className="text-white text-lg font-medium">
+                                {!encryptionProgress && 'Initialisation...'}
+                                {encryptionProgress?.stage === 'COMPRESSING' && 'Compression en cours...'}
+                                {encryptionProgress?.stage === 'ENCODING' && 'Encodage des données...'}
+                                {encryptionProgress?.stage === 'ENDED' && 'Chiffrement terminé !'}
+                            </p>
+                            {encryptionProgress?.stage === 'ENCODING' && (
+                                <p className="text-accent text-2xl font-bold mt-1">
+                                    {progress.toFixed(1)}%
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="progress-bar-container">
+                            <div className="progress-bar-bg">
+                                <div 
+                                    className={`progress-bar-fill ${isCompleted ? 'completed' : ''}`}
+                                    style={{ 
+                                        width: isCompleted ? '100%' : 
+                                            encryptionProgress?.stage === 'COMPRESSING' ? '15%' :
+                                            `${Math.max(15, progress)}%` 
+                                    }}
+                                ></div>
+                            </div>
+                        </div>
+                    </>
+                )}
 
                 {/* Encoding Details */}
                 {encryptionProgress?.stage === 'ENCODING' && (
-                    <div className="encoding-details mt-4 text-center">
+                    <div className="mt-4 text-center">
                         <p className="text-gray-400 text-sm">
                             Transformation en notation d'échecs
                         </p>
                     </div>
                 )}
-            </div>
 
-            {/* Download Button */}
-            {isCompleted && (
-                <button 
-                    onClick={downloadEncryptedFile} 
-                    className="download-button w-full"
-                >
-                    <span className="download-icon">⬇️</span>
-                    <span>Télécharger le fichier chiffré</span>
-                </button>
-            )}
+                {/* Download Button */}
+                {isCompleted && (
+                    <button 
+                        onClick={downloadEncryptedFile} 
+                        className="download-button w-full"
+                    >
+                        <span>Télécharger le fichier chiffré</span>
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
