@@ -1,4 +1,4 @@
-import { gzipSync } from 'fflate';
+/* import { gzipSync } from 'fflate'; */
 import { Chess } from "chess.js";
 
 
@@ -27,10 +27,10 @@ export async function encryptFile(
         const arrayBuffer = await file.arrayBuffer();
         const uint8Input = new Uint8Array(arrayBuffer);
 
-        const compressed = gzipSync(uint8Input, { level: 9, mem: 12 });
+        /*const compressed = gzipSync(uint8Input, { level: 9, mem: 12 });
         
         if (compressed.length < uint8Input.length) dataFile = compressed;
-        else                                       dataFile = uint8Input;
+        else                                    */ dataFile = uint8Input;
 
     } catch {
         return [];
@@ -58,7 +58,7 @@ export async function encryptFile(
             remainingPercentage: 100 - ((binaryArray.length / binaryLength) * 100)
         });
 
-        if (++tick % 200 === 0) {
+        if (++tick % 500 === 0) {
             await new Promise(requestAnimationFrame);
         }
 

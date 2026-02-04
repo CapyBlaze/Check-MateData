@@ -34,7 +34,7 @@ export function FileUploadCard({
             return;
         }
         
-        if (file.size > MAX_SIZE_FILE) {
+        if (icon === 'FILE' && file.size > MAX_SIZE_FILE) {
             onError?.(`The file is too large. Maximum allowed size: ${MAX_SIZE_FILE / 1024} KB.`);
             return;
         };
@@ -91,7 +91,7 @@ export function FileUploadCard({
                         className="hidden"
                         type="file"
                         id="InputEncrypt"
-                        accept={icon === 'CHESS_FILE' ? '.pgn' : '*'}
+                        accept={icon === 'CHESS_FILE' ? '.pgn, .zip' : '*'}
                         onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                     />
 
@@ -106,7 +106,7 @@ export function FileUploadCard({
                         )}
 
                         {icon === 'CHESS_FILE' && (
-                            <svg className="w-12 h-auto opacity-50" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <svg aria-hidden="true" className="w-12 h-auto opacity-50" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M416 221.25V416C416 428.73 410.943 440.939 401.941 449.941C392.939 458.943 380.73 464 368 464H144C131.27 464 119.061 458.943 110.059 449.941C101.057 440.939 96 428.73 96 416V96C96 83.2696 101.057 71.0606 110.059 62.0589C119.061 53.0571 131.27 48 144 48H242.75C251.234 48.0013 259.37 51.3716 265.37 57.37L406.63 198.63C412.628 204.63 415.999 212.766 416 221.25Z" stroke="#d2d5db" strokeWidth="32" strokeLinejoin="round"/>
                                 <path d="M256 56V176C256 184.487 259.371 192.626 265.373 198.627C271.374 204.629 279.513 208 288 208H408" stroke="#d2d5db" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"/>
                                 <path d="M215.512 388.451H296.111C296.111 388.451 301.623 387.365 301.623 381.945C301.623 373.811 294.143 370.844 290.6 366.219C275.64 347.445 276.73 301.732 276.73 301.732H234.893C234.893 301.732 235.983 347.445 221.016 366.219C217.48 370.844 210 373.811 210 381.945C210 387.365 215.512 388.451 215.512 388.451Z" fill="#d2d5db"/>

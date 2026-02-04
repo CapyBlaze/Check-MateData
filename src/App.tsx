@@ -28,18 +28,18 @@ function App() {
 
 
             {/* Header */}
-            <div className="flex flex-col items-center flex-nowrap mt-24 absolute top-8 left-1/2 -translate-x-1/2">
-                <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-2">
-                    <span className="noSelect text-5xl mr-1.5">♛</span>
+            <div className="flex flex-col items-center flex-nowrap mt-16 lg:mt-24 absolute top-8 left-1/2 -translate-x-1/2">
+                <h1 aria-label="Check-MateData" className="text-3xl sm:text-4xl lg:text-5xl w-screen text-center font-bold text-white tracking-tight mb-2">
+                    <span className="noSelect mr-1.5" aria-hidden="true">♛</span>
 
                     Check-Mate
                     <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-600">
                         Data
                     </span>
                     
-                    <span className="noSelect text-5xl ml-1.5">♚</span>
+                    <span className="noSelect ml-1.5" aria-hidden="true">♚</span>
                 </h1>
-                <div className="text-gray-400 text-lg max-w-md mx-auto">
+                <div className="text-gray-400 text-sm sm:text-base md:text-lg max-w-md mx-auto text-center ">
                     Transform your files into chess games!
                 </div>
             </div>
@@ -47,7 +47,7 @@ function App() {
 
             {/* File Upload & Treatment */}
             <div 
-                className={`flex flex-row transition-transform duration-500 ease-in-out delay-500 mt-36
+                className={`flex flex-row transition-transform duration-500 ease-in-out delay-500 pt-36
                     ${file === null ? 'translate-x-1/4' : '-translate-x-1/4'}
                 `}
             >
@@ -91,9 +91,10 @@ function App() {
 
                 <div className="w-screen flex flex-col lg:flex-row gap-6 justify-center items-center">
                     <div 
-                        className="arrow-back opacity-50 hover:opacity-80 absolute left-1/2 m-9 cursor-pointer transition-all duration-300"
+                        className="arrow-back opacity-50 hover:opacity-80 absolute top-0 sm:top-1/2 left-1/2 m- sm:m-9 cursor-pointer transition-all duration-300"
                         onClick={() => setFile(null)}
                     >
+                        {/* REgler probleme return home et mettre crois niveau du fichier */}
                         <svg className="w-10 h-auto" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M249.38 336L170 256L249.38 176" stroke="white" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"/>
                             <path d="M181.03 256H342" stroke="white" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"/>

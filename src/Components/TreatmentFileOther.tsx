@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { encryptFile, type EncryptionProgress } from "./../Services/encryptFile";
-import { createZip } from "./../Services/createZip";
+import { useState, useEffect, useEffectEvent } from "react";
+import { type EncryptionProgress } from "./../Services/encryptFile";
+import { saveFile } from "../Services/saveFile";
 import { formatFileSize } from "../Utils/formatFileSize";
+import EncryptionWorker from '../worker/encrypt.worker?worker';
 
 
 interface TreatmentFileOtherProps {
@@ -20,38 +21,59 @@ export function TreatmentFileOther({
     const [fileName, setFileName] = useState<string>("");
 
     
+    const updateFileInfo = useEffectEvent((file: File) => {
+        setFileName(file.name);
+    });
+
+    const updateEncryptionProgress = useEffectEvent((encryptionProgressContent: EncryptionProgress | null) => {
+        setEncryptionProgress(encryptionProgressContent);
+    });
+
+    const updateDataEncrypt = useEffectEvent((dataEncryptContent: string[] | null) => {
+        setDataEncrypt(dataEncryptContent);
+    })
+
+
     useEffect(() => {
-        const start = async () => {
-            if (!file) return;
+        if (!file) return;
 
-            setFileName(file.name.split('.')[0]);
-            setEncryptionProgress(null);
-            setDataEncrypt(null);
+        updateFileInfo(file);
+        updateEncryptionProgress(null);
+        updateDataEncrypt(null);
 
-            try {
-                const result = await encryptFile(file, (progress) => {
-                    setEncryptionProgress(progress);
-                });
+        // Initialisation du worker
+        const worker = new EncryptionWorker();
 
-                if (result.length === 0) {
-                    onError?.("An error occurred while reading the file.");
-                    return;
-                }
+        // Écoute des messages venant du worker
+        worker.onmessage = (event) => {
+            const { type, payload } = event.data;
 
-                setDataEncrypt(result);
+            if (type === 'PROGRESS') {
+                updateEncryptionProgress(payload);
 
-            } catch {
-                onError?.("An error occurred during file encryption.");
+            } else if (type === 'SUCCESS') {
+                updateDataEncrypt(payload);
+                worker.terminate(); // Libère la mémoire
+
+            } else if (type === 'ERROR') {
+                onError?.(payload);
+                worker.terminate();
             }
         };
 
-        start();
+        // Lancement de la mission
+        worker.postMessage({ file });
+
+        // Nettoyage si le composant est démonté
+        return () => worker.terminate();
+
+
     }, [file, onError]);
     
     
     const downloadEncryptedFile = () => {
         if (dataEncrypt == null) return;
-        if (dataEncrypt.length > 0) createZip(dataEncrypt, fileName);
+        if (dataEncrypt.length > 0) saveFile(dataEncrypt, `${fileName}.pgn`);
     };
 
 
@@ -79,10 +101,10 @@ export function TreatmentFileOther({
             </div>
 
             {/* Progress Section */}
-            <div className="progress-section glass rounded-xl p-5 mb-6">
+            <div className="noSelect progress-section glass rounded-xl p-5 mb-6">
                 {/* Animated Chess Piece */}
-                <div className="chess-animation-container mb-4">
-                    <div className={`chess-piece-animated ${isCompleted ? 'completed' : ''}`}>
+                <div className="noSelect chess-animation-container mb-4">
+                    <div className={`noSelect chess-piece-animated ${isCompleted ? 'completed' : ''}`}>
                         {isCompleted ? '♛' : encryptionProgress?.stage === 'COMPRESSING' ? '♜' : '♞'}
                     </div>
                 </div>
@@ -93,10 +115,10 @@ export function TreatmentFileOther({
                         {/* Status Text */}
                         <div className="text-center mb-4">
                             <p className="text-white text-lg font-medium">
-                                {!encryptionProgress && 'Initialisation...'}
-                                {encryptionProgress?.stage === 'COMPRESSING' && 'Compression en cours...'}
-                                {encryptionProgress?.stage === 'ENCODING' && 'Encodage des données...'}
-                                {encryptionProgress?.stage === 'ENDED' && 'Chiffrement terminé !'}
+                                {!encryptionProgress && 'Initialization...'}
+                                {encryptionProgress?.stage === 'COMPRESSING' && 'Compression in progress...'}
+                                {encryptionProgress?.stage === 'ENCODING' && 'Data encoding...'}
+                                {encryptionProgress?.stage === 'ENDED' && 'Encryption complete!'}
                             </p>
                             {encryptionProgress?.stage === 'ENCODING' && (
                                 <p className="text-accent text-2xl font-bold mt-1">
@@ -125,7 +147,7 @@ export function TreatmentFileOther({
                 {encryptionProgress?.stage === 'ENCODING' && (
                     <div className="mt-4 text-center">
                         <p className="text-gray-400 text-sm">
-                            Transformation en notation d'échecs
+                            Transformation into chess notation
                         </p>
                     </div>
                 )}
@@ -136,7 +158,7 @@ export function TreatmentFileOther({
                         onClick={downloadEncryptedFile} 
                         className="download-button w-full"
                     >
-                        <span>Télécharger le fichier chiffré</span>
+                        <span>Download encrypted file</span>
                     </button>
                 )}
             </div>

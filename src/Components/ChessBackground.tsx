@@ -43,6 +43,7 @@ export function ChessBackground() {
             {/* Falling chess pieces */}
             {pieces.map((piece) => (
                 <span
+                    aria-hidden="true"
                     key={piece.id}
                     className="chess-piece text-white/20"
                     style={{
