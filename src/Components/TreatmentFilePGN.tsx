@@ -1,23 +1,31 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { unzipFile } from "../Services/unzipFile";
 import { type DecryptionProgress } from "../Services/decryptFile";
-import { formatFileSize } from "../Utils/formatFileSize";
 import { saveFile } from "../Services/saveFile";
 import DecryptionWorker from '../worker/decrypt.worker?worker';
+import { formatFileSize } from "../Utils/formatFileSize";
 
 
 interface TreatmentFilePGNProps {
     file: File;
-    onError?: (message: string) => void;
+    onReset?: () => void;
+    onNotification?: (message: string, style: 'error' | 'success') => void;
 }
+
 
 export function TreatmentFilePGN({ 
     file, 
-    onError 
+    onReset,
+    onNotification
 }: TreatmentFilePGNProps) {
 
     const [decryptedFile, setDecryptedFile] = useState<File | null>(null);
     const [decryptionProgress, setDecryptionProgress] = useState<DecryptionProgress | null>(null);
+
+    const progress = decryptionProgress?.remainingPercentage ?? 0;
+    const isCompleted = decryptionProgress?.stage === 'ENDED';
+    const hasNotifiedSuccess = useRef(false);
+    const hasFinished = useRef(false);
 
     const updateDecryptionProgress = useEffectEvent((decryptionProgressContent: DecryptionProgress | null) => {
         setDecryptionProgress(decryptionProgressContent);
@@ -29,26 +37,34 @@ export function TreatmentFilePGN({
 
 
     useEffect(() => {
+        hasNotifiedSuccess.current = false;
+        hasFinished.current = false;
+        updateDecryptionProgress(null);
+        updateDecryptedFile(null);
+
         const runWorker = async () => {
             try {
                 const files = await unzipFile(file);
-
-                updateDecryptionProgress(null);
-                updateDecryptedFile(null);
-
                 const worker = new DecryptionWorker();
 
                 worker.onmessage = (event) => {
                     const { type, payload } = event.data;
+
+                    if (hasFinished.current && type === 'PROGRESS') return;
+
                     if (type === 'PROGRESS') {
                         updateDecryptionProgress(payload);
 
                     } else if (type === 'SUCCESS') {
+                        hasFinished.current = true;
+                    
+                        setDecryptedFile(payload);
+
                         updateDecryptedFile(payload);
                         worker.terminate();
 
                     } else if (type === 'ERROR') {
-                        onError?.(payload);
+                        onNotification?.(payload, 'error');
                         worker.terminate();
                     }
                 };
@@ -58,7 +74,7 @@ export function TreatmentFilePGN({
                 currentWorker = worker;
 
             } catch {
-                onError?.("Erreur lors du dézippage.");
+                onNotification?.("Error unzipping.", 'error');
             }
         };
 
@@ -69,8 +85,15 @@ export function TreatmentFilePGN({
         return () => {
             if (currentWorker) currentWorker.terminate();
         };
+    }, [file, onNotification]);
 
-    }, [file, onError]);
+    useEffect(() => {
+        if (isCompleted && decryptedFile && !hasNotifiedSuccess.current) {
+            onNotification?.(`Encoded in ${decryptionProgress?.encodingInfo?.numberMatches} matches and ${decryptionProgress?.encodingInfo?.numberMoves} moves.`, 'success');
+            hasNotifiedSuccess.current = true;
+        }
+    }, [isCompleted, decryptedFile, onNotification, decryptionProgress]);
+
 
     const downloadDecryptedFile = () => {
         if (!decryptedFile) return;
@@ -78,15 +101,12 @@ export function TreatmentFilePGN({
     }
 
 
-    const progress = decryptionProgress?.remainingPercentage ?? 0;
-    const isCompleted = decryptionProgress?.stage === 'ENDED';
-
     return (
         <div className="w-full max-w-md p-6">
             {/* File Info Card */}
             <div className="file-info-card glass rounded-xl p-4 mb-6">
                 <div className="flex items-center gap-4">
-                    <div className="file-icon-wrapper">
+                    <div className="file-icon-wrapper cursor-default noSelect">
                         <span className="text-3xl">📄</span>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -96,6 +116,12 @@ export function TreatmentFilePGN({
                         <p className="text-gray-400 text-sm">
                             {formatFileSize(file.size)}
                         </p>
+                    </div>
+                    <div className="opacity-85 cursor-pointer" onClick={onReset}>
+                        <svg width="32" height="32" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M368 368L144 144" stroke="white" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M368 144L144 368" stroke="white" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
                     </div>
                 </div>
             </div>

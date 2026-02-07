@@ -1,10 +1,14 @@
 import { Chess } from "chess.js";
-
+import { BitBuilder } from "../Utils/BitBuilder";
 
 
 export interface DecryptionProgress {
     stage?: 'DECODING' | 'ENDED';
     remainingPercentage?: number;
+    encodingInfo?: {
+        numberMatches: number;
+        numberMoves: number;
+    }
 }
 
 
@@ -24,11 +28,26 @@ export async function decryptFile(
     const chess = new Chess()
     const chessTemp = new Chess();
     const games: string[] = [];
-    const dataResultFile: string[] = [];
+    const bitBuilderInstance = new BitBuilder();
+
+    const encodingInfo: DecryptionProgress['encodingInfo'] = {
+        numberMatches: 0,
+        numberMoves: 0,
+    };
+
 
     for (const file of files) {
         const fileContent = await file.text();
-        games.push(...fileContent.split(/\n+(?=\[Event ")/g));
+        const splitGames = fileContent
+            .split(/\n+(?=\[Event ")/g)
+            .map(game => game.trim())
+            .filter(Boolean);
+
+        games.push(...splitGames);
+    }
+
+    if (games.length === 0) {
+        throw new Error("No games found in PGN files.");
     }
 
     
@@ -38,14 +57,14 @@ export async function decryptFile(
 
         for (const move of chess.history()) {
             const movesList = chessTemp.moves();
-            const numberMoves = chessTemp.moves().length;
+            const numberMoves = movesList.length;
             
             if (numberMoves > 1) {
                 const numberBits = Math.floor(Math.log2(numberMoves));
                 const moveIndex = movesList.indexOf(move);
 
                 if (moveIndex !== -1 && moveIndex < Math.pow(2, numberBits)) {
-                    dataResultFile.push(
+                    bitBuilderInstance.pushString(
                         moveIndex.toString(2).padStart(numberBits, '0')
                     );
                 }
@@ -53,30 +72,30 @@ export async function decryptFile(
             }
 
             chessTemp.move(move);
+            encodingInfo.numberMoves++;
         }
         
+        encodingInfo.numberMatches++;
 
         onProgress?.({
             stage: 'DECODING',
-            remainingPercentage: (i / games.length) * 100
+            remainingPercentage: ((i + 1) / games.length) * 100
         });
     }
 
 
-
     onProgress?.({
         stage: 'ENDED',
-        remainingPercentage: 100
+        remainingPercentage: 100,
+        encodingInfo: encodingInfo
     });
 
- 
-    // TRANSFORMATION STRING (BINAIRE) EN UN FICHIER
-
     return new File(
-        [dataResultFile.join("")], 
+        [bitBuilderInstance.getUint8Array().buffer as ArrayBuffer], 
         files[0].name
             .split('.').slice(0, -1).join('.')
             .split('_').slice(1).join('_') || 
-            "decrypted_file"
+            "decrypted_file",
+        { type: 'application/octet-stream' }
     );
 }

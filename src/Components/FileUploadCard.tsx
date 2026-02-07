@@ -1,21 +1,22 @@
 import { useRef, useState, type DragEvent } from "react";
 
 
-const MAX_SIZE_FILE = 50 * 1024; // 50 Ko
-
 interface FileUploadCardProps {
     title: string;
     description: string;
     icon: 'FILE' | 'CHESS_FILE';
-    onError?: (message: string) => void;
+    onNotification?: (message: string, style: 'error' | 'success') => void;
     onFileSelect: ({ file, type }: { file: File, type: 'PGN' | 'OTHER' }) => void;
 }
+
+
+const MAX_SIZE_FILE = 50 * 1024; // 50 Ko
 
 export function FileUploadCard({
     title,
     description,
     icon,
-    onError,
+    onNotification,
     onFileSelect
 }: FileUploadCardProps) {
     const [isDragging, setIsDragging] = useState(false);
@@ -25,17 +26,17 @@ export function FileUploadCard({
 
     const handleFileSelect = async (file: File) => {
         if (!file) {
-            onError?.("No file selected.");
+            onNotification?.("No file selected.", 'error');
             return;
         }
 
         if (file.size === 0) {
-            onError?.("The file is empty.");
+            onNotification?.("The file is empty.", 'error');
             return;
         }
         
         if (icon === 'FILE' && file.size > MAX_SIZE_FILE) {
-            onError?.(`The file is too large. Maximum allowed size: ${MAX_SIZE_FILE / 1024} KB.`);
+            onNotification?.(`The file is too large. Maximum allowed size: ${MAX_SIZE_FILE / 1024} KB.`, 'error');
             return;
         };
 
@@ -50,6 +51,7 @@ export function FileUploadCard({
         e.preventDefault();
         setIsDragging(false);
         const droppedFile = e.dataTransfer.files[0];
+
         if (droppedFile) {
             handleFileSelect(droppedFile);
         }
@@ -67,10 +69,13 @@ export function FileUploadCard({
 
     return (
         <div className="w-full max-w-md">
+            {/* Title and Description */}
             <div className="glass rounded-t-xl border-t-2 border-l-2 border-r-2 border-[#ffffff11] p-3">
                 <h2 className="text-xl font-bold text-white">{title}</h2>
                 <p className="text-sm text-gray-400">{description}</p>
             </div>
+
+            {/* File Drop Zone */}
             <div>
                 <div 
                     className={
@@ -114,7 +119,6 @@ export function FileUploadCard({
                                 <path d="M215.512 394.164L211.02 401.728V411.521H300.604V401.728L296.112 394.164H215.512Z" fill="#d2d5db"/>
                             </svg>
                         )}
-
 
                         <div className="text-left">
                             <p className="text-gray-300 font-medium mb-1">Drag your file here</p>

@@ -1,24 +1,31 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ChessBackground } from "./Components/ChessBackground";
-import { ErrorPopup } from "./Components/ErrorPopup";
+import { NotificationPopup } from "./Components/NotificationPopup";
 import { FileUploadCard } from "./Components/FileUploadCard";
 import { TreatmentFilePGN } from "./Components/TreatmentFilePGN";
 import { TreatmentFileOther } from "./Components/TreatmentFileOther";
 
 
 function App() {
-    const [errors, setErrors] = useState<{ id: number; message: string }[]>([]);
+    const [notifications, setNotifications] = useState<{ id: number; message: string, style: 'error' | 'success' }[]>([]);
     const [file, setFile] = useState<{ file: File, type: 'PGN' | 'OTHER' } | null>(null);
+    const [step, setStep] = useState<'UPLOAD' | 'TREATMENT'>('UPLOAD');
     
 
-    const addError = (message: string) => {
+    const addNotification = useCallback((message: string, style: 'error' | 'success' = 'error') => {
         const id = Date.now();
-        setErrors((prev) => [...prev, { id, message }]);
-    };
+        setNotifications((prev) => [...prev, { id, message, style }]);
+    }, []);
 
-    const removeError = (id: number) => {
-        setErrors((prev) => prev.filter((e) => e.id !== id));
-    };
+    const removeNotification = useCallback((id: number) => {
+        setNotifications((prev) => prev.filter((e) => e.id !== id));
+    }, []);
+
+
+    const onReset = () => {
+        setFile(null);
+        setStep('UPLOAD');
+    }
     
 
     return (
@@ -33,7 +40,7 @@ function App() {
                     <span className="noSelect mr-1.5" aria-hidden="true">♛</span>
 
                     Check-Mate
-                    <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-600">
+                    <span className="text-transparent bg-[#a45bff] bg-clip-text">
                         Data
                     </span>
                     
@@ -47,8 +54,8 @@ function App() {
 
             {/* File Upload & Treatment */}
             <div 
-                className={`flex flex-row transition-transform duration-500 ease-in-out delay-500 pt-36
-                    ${file === null ? 'translate-x-1/4' : '-translate-x-1/4'}
+                className={`flex flex-row transition-transform duration-500 ease-in-out delay-500 mt-36
+                    ${step === 'UPLOAD' ? 'translate-x-1/4' : '-translate-x-1/4'}
                 `}
             >
                 <div className="w-screen flex flex-col lg:flex-row gap-6 justify-center items-center">
@@ -56,8 +63,11 @@ function App() {
                         title="File to PGN"
                         description="Select a file to convert it to PGN chess game format."
                         icon="FILE"
-                        onError={addError}
-                        onFileSelect={(selectedFile) => setFile(selectedFile)}
+                        onNotification={addNotification}
+                        onFileSelect={(selectedFile) => {
+                            setFile(selectedFile);
+                            setStep('TREATMENT');
+                        }}
                     />
                     
                     <div className="hidden lg:flex flex-col items-center gap-2 px-4 relative">
@@ -84,43 +94,34 @@ function App() {
                         title="PGN to file"
                         description="Select a PGN chess game file to convert it back to the original file."
                         icon="CHESS_FILE"
-                        onError={addError}
-                        onFileSelect={(selectedFile) => setFile(selectedFile)}
+                        onNotification={addNotification}
+                        onFileSelect={(selectedFile) => {
+                            setFile(selectedFile);
+                            setStep('TREATMENT');
+                        }}
                     />
                 </div>
 
                 <div className="w-screen flex flex-col lg:flex-row gap-6 justify-center items-center">
-                    <div 
-                        className="arrow-back opacity-50 hover:opacity-80 absolute top-0 sm:top-1/2 left-1/2 m- sm:m-9 cursor-pointer transition-all duration-300"
-                        onClick={() => setFile(null)}
-                    >
-                        {/* REgler probleme return home et mettre crois niveau du fichier */}
-                        <svg className="w-10 h-auto" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M249.38 336L170 256L249.38 176" stroke="white" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M181.03 256H342" stroke="white" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M448 256C448 150 362 64 256 64C150 64 64 150 64 256C64 362 150 448 256 448C362 448 448 362 448 256Z" stroke="white" strokeWidth="32" strokeMiterlimit="10"/>
-                        </svg>
-                    </div>
-
-
                     {file && file.type === 'PGN' && (
-                        <TreatmentFilePGN file={file.file} />
+                        <TreatmentFilePGN file={file.file} onReset={onReset} onNotification={addNotification} />
                     )}
 
                     {file && file.type === 'OTHER' && (
-                        <TreatmentFileOther file={file.file} />
+                        <TreatmentFileOther file={file.file} onReset={onReset} onNotification={addNotification} />
                     )}
                 </div>
             </div>
 
 
-            {/* Error Popups */}
+            {/* Notifications Popups */}
             <div className="fixed top-4 right-4 z-50 space-y-2">
-                {errors.map((error, index) => (
-                    <div key={error.id} style={{ transform: `translateY(${index * 10}px)` }}>
-                        <ErrorPopup
-                            message={error.message}
-                            onClose={() => removeError(error.id)}
+                {notifications.map((notification, index) => (
+                    <div key={notification.id} style={{ transform: `translateY(${index * 10}px)` }}>
+                        <NotificationPopup
+                            message={notification.message}
+                            onClose={() => removeNotification(notification.id)}
+                            style={notification.style}
                         />
                     </div>
                 ))}

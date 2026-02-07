@@ -2,12 +2,27 @@
 import { Chess } from "chess.js";
 
 
-
 export interface EncryptionProgress {
     stage?: 'COMPRESSING' | 'ENCODING' | 'ENDED';
     totalBytes?: number;
     remainingByte?: number;
     remainingPercentage?: number;
+    encodingInfo?: {
+        numberMatches: number;
+        numberMoves: number;
+        numberMatchesNull: number;
+        numberMatchesBlack: number;
+        numberMatchesWhite: number;
+    }
+}
+
+
+function setChessHeader(chess: Chess) {
+    chess.setHeader('Event', 'Check-MateData');
+    chess.setHeader('Site', 'Local party');
+    chess.setHeader('Date', new Date().toISOString().split('T')[0].replace(/-/g, '.'));
+    chess.setHeader('White', 'Player');
+    chess.setHeader('Black', 'Bot');
 }
 
 
@@ -37,7 +52,6 @@ export async function encryptFile(
     }
 
 
-
     const binaryString = Array.from(dataFile)
         .map(byte => byte.toString(2).padStart(8, '0'))
         .join('');
@@ -48,7 +62,15 @@ export async function encryptFile(
     const chess = new Chess();
     const partyArray: string[] = [];
     let endGame = false;
-    let tick = 0;
+
+    const encodingInfo: EncryptionProgress['encodingInfo'] = {
+        numberMatches: 0,
+        numberMoves: 0,
+        numberMatchesNull: 0,
+        numberMatchesBlack: 0,
+        numberMatchesWhite: 0,
+    };
+
 
     while (binaryArray.length > 0) {
         onProgress?.({
@@ -57,43 +79,46 @@ export async function encryptFile(
             remainingByte: binaryArray.length,
             remainingPercentage: 100 - ((binaryArray.length / binaryLength) * 100)
         });
-
-        if (++tick % 500 === 0) {
-            await new Promise(requestAnimationFrame);
-        }
+        
 
         if (chess.isGameOver() || endGame) {
-            chess.setHeader('Event', 'Check-MateData');
-            chess.setHeader('Site', 'Local party');
-            chess.setHeader('Date', new Date().toISOString().split('T')[0].replace(/-/g, '.'));
+            setChessHeader(chess);
             chess.setHeader('Round', partyArray.length + 1 + '');
-            chess.setHeader('White', 'Player');
-            chess.setHeader('Black', 'Bot');
             
             if (chess.isDraw() || chess.isStalemate()) {
                 chess.setHeader('Result', '1/2-1/2');
 
             } else if (chess.isCheckmate()) {
-                const winner = chess.turn() === 'w' ? 'Black' : 'White';
-                chess.setHeader('Result', winner === 'White' ? '1-0' : '0-1');
+                if (chess.turn() === 'w') {
+                    chess.setHeader('Result', '0-1');
+                    encodingInfo.numberMatchesBlack++;
+
+                } else {
+                    chess.setHeader('Result', '1-0');
+                    encodingInfo.numberMatchesWhite++;
+                }
             
             } else {
                 chess.setHeader('Result', '*');
+                encodingInfo.numberMatchesNull++;
             }
 
             partyArray.push(chess.pgn({ newline: '\n' }));
             partyArray[partyArray.length - 1] += "\n";
 
             chess.reset();
+            encodingInfo.numberMatches++;
 
             endGame = false;
         }
 
 
-        const numberMoves = chess.moves().length;
+        const movesList = chess.moves();
+        const numberMoves = movesList.length;
         let numberBits;
         if (numberMoves == 1) {
-            chess.move(chess.moves()[0]);
+            chess.move(movesList[0]);
+            encodingInfo.numberMoves++;
             continue;
 
         } else if (numberMoves > 1) {
@@ -107,19 +132,18 @@ export async function encryptFile(
         const bitsToRead = binaryArray.splice(0, numberBits);
         const moveIndex = parseInt(bitsToRead.join(''), 2);
         
-        chess.move(chess.moves()[moveIndex]);
+        chess.move(movesList[moveIndex]);
+        encodingInfo.numberMoves++;
     }
 
     if (chess.history({ verbose: false }).length > 0) {
-        chess.setHeader('Event', 'Check-MateData');
-        chess.setHeader('Site', 'Local party');
-        chess.setHeader('Date', new Date().toISOString().split('T')[0].replace(/-/g, '.'));
+        setChessHeader(chess);
         chess.setHeader('Round', partyArray.length + 1 + '');
-        chess.setHeader('White', 'Player');
-        chess.setHeader('Black', 'Bot');
         chess.setHeader('Result', '*');
 
         partyArray.push(chess.pgn({ newline: '\n' }));
+
+        encodingInfo.numberMatches++;
     }
 
     
@@ -127,7 +151,8 @@ export async function encryptFile(
         stage: 'ENDED',
         totalBytes: binaryLength,
         remainingByte: binaryArray.length,
-        remainingPercentage: 100
+        remainingPercentage: 100,
+        encodingInfo: encodingInfo
     });
     return partyArray
 }

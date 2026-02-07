@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-const chessPieces = ['♔', '♕', '♖', '♗', '♘', '♙', '♚', '♛', '♜', '♝', '♞', '♟'];
 
 interface FallingPiece {
     id: number;
@@ -11,6 +10,9 @@ interface FallingPiece {
     size: number;
     opacity: number;
 }
+
+
+const chessPieces = ['♔', '♕', '♖', '♗', '♘', '♙', '♚', '♛', '♜', '♝', '♞', '♟'];
 
 export function ChessBackground() {
     const [pieces, setPieces] = useState<FallingPiece[]>([]);
@@ -35,6 +37,7 @@ export function ChessBackground() {
         generatePieces();
     }, []);
 
+
     return (
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
             {/* Gradient background */}
@@ -57,8 +60,8 @@ export function ChessBackground() {
                     {piece.piece}
                 </span>
             ))}
-
             
+            {/* Grid Overlay */}
             <div
                 className="absolute inset-0 opacity-5"
                 style={{

@@ -1,6 +1,7 @@
 // worker.ts
 import { encryptFile } from "../Services/encryptFile";
 
+
 self.onmessage = async (event: MessageEvent<{ file: File }>) => {
     const { file } = event.data;
 
