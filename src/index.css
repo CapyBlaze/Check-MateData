@@ -88,6 +88,12 @@ body {
     user-select: none;
 }
 
+.noDrag {
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -ms-user-drag: none;
+}
+
 
 /* File Info Card */
 .file-info-card {
@@ -194,6 +200,43 @@ body {
     font-size: 1.25rem;
 }
 
+
+.selectableSquareChessboard:hover {
+    background-color: rgb(139 107 237 / 46%) !important;
+}
+
+/* Checkbox Animation */
+input[type="checkbox"] {
+    appearance: none;
+    width: 30px;
+    height: 30px;
+    border: 2px solid #8d8d8d;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+input[type="checkbox"]:hover {
+    border-color: #705ba1;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #8b5cf6;
+    border-color: #8b5cf6;
+}
+
+input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 15px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%) rotate(45deg);
+}
 
 
 

@@ -3,12 +3,13 @@ import { useCallback, useEffect, useState } from 'react';
 
 interface ErrorPopupProps {
     message: string;
-    onClose: () => void;
     style: 'error' | 'success';
+    time?: number;
+    onClose: () => void;
 }
 
 
-export function NotificationPopup({ message, onClose, style }: ErrorPopupProps) {
+export function NotificationPopup({ message, style, time = 10, onClose }: ErrorPopupProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
 
@@ -24,10 +25,10 @@ export function NotificationPopup({ message, onClose, style }: ErrorPopupProps) 
 
         const timer = setTimeout(() => {
             handleClose();
-        }, 10000);
+        }, time * 1000);
 
         return () => clearTimeout(timer);
-    }, [handleClose]);
+    }, [handleClose, time]);
 
     
     return (
@@ -40,7 +41,7 @@ export function NotificationPopup({ message, onClose, style }: ErrorPopupProps) 
                 }
             `}
         >
-            <div className={`glass rounded-xl p-4 pr-12 max-w-sm border shadow-2xl ${style === 'error' ? 'border-red-500/30' : 'border-green-500/30'}`}
+            <div className={`glass overflow-hidden rounded-xl p-4 pr-12 max-w-sm border shadow-2xl ${style === 'error' ? 'border-red-500/30' : 'border-green-500/30'}`}
                 style={{ boxShadow: style === 'error' ? '0 8px 32px rgba(239, 68, 68, 0.3)' : '0 8px 32px rgba(34, 197, 94, 0.3)' }}
             >
                 <div className="flex items-start gap-3">
@@ -77,9 +78,9 @@ export function NotificationPopup({ message, onClose, style }: ErrorPopupProps) 
                 {/* Progress bar for auto-close */}
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700 rounded-b-2xl overflow-hidden">
                     <div
-                        className={`h-full bg-linear-to-r ${style === 'error' ? 'from-red-500 to-rose-600' : 'from-green-500 to-lime-600'} rounded-b-2xl`}
+                        className={`h-full rounded-4xl bg-linear-to-r ${style === 'error' ? 'from-red-500 to-rose-600' : 'from-green-500 to-lime-600'}`}
                         style={{
-                            animation: 'shrink 10s linear forwards',
+                            animation: `shrink ${time}s linear forwards`,
                         }}
                     />
                 </div>

@@ -41,7 +41,7 @@ export function ChessBackground() {
     return (
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
             {/* Gradient background */}
-            <div className="absolute inset-0 bg-linear-to-br from-bg-start via-bg-middle to-bg-end" />
+            <div className="absolute inset-0 bg-[#07050b]" />
 
             {/* Falling chess pieces */}
             {pieces.map((piece) => (
@@ -66,8 +66,8 @@ export function ChessBackground() {
                 className="absolute inset-0 opacity-5"
                 style={{
                     backgroundImage: `
-                        linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px)
+                        linear-gradient(rgb(255 255 255 / 65%) 1px, #ffffff00 1px), 
+                        linear-gradient(90deg, rgb(255 255 255 / 65%) 1px, #ffffff00 1px)
                     `,
                     backgroundSize: '50px 50px',
                 }}
