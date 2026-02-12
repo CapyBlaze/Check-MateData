@@ -66,8 +66,8 @@ export function ChessBackground() {
                 className="absolute inset-0 opacity-5"
                 style={{
                     backgroundImage: `
-                        linear-gradient(rgb(255 255 255 / 65%) 1px, #ffffff00 1px), 
-                        linear-gradient(90deg, rgb(255 255 255 / 65%) 1px, #ffffff00 1px)
+                        linear-gradient(rgb(255 255 255 / 40%) 1px, #ffffff00 1px), 
+                        linear-gradient(90deg, rgb(255 255 255 / 40%) 1px, #ffffff00 1px)
                     `,
                     backgroundSize: '50px 50px',
                 }}
