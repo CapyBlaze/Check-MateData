@@ -18,10 +18,10 @@ self.onmessage = async (event: MessageEvent<{ files: File[] }>) => {
             payload: result 
         });
 
-    } catch {
+    } catch (error: Error | unknown) {
         self.postMessage({ 
             type: 'ERROR', 
-            payload: "Error during decryption." 
+            payload: error instanceof Error ? error.message : String(error)
         });
     }
 };

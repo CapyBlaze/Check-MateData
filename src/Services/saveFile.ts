@@ -13,7 +13,8 @@ function toBlob(content: string | File): Blob | File {
 }
 
 function toZipName(fileName: string): string {
-    const baseName = fileName.replace(/\.[^/.]+$/, '');
+    let baseName = fileName.replace(/\.[^/.]+$/, '');
+    baseName = baseName.split('.')[0];
     return `${baseName || 'archive'}.zip`;
 }
 

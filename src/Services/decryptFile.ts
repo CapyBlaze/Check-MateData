@@ -90,12 +90,12 @@ export async function decryptFile(
         encodingInfo: encodingInfo
     });
 
+    const fileName = files[0].name.split('.').slice(0, -1).join('.') // Remove extension
+    const finalName = fileName.includes('_') ? fileName.split('_').slice(1).join('_') : fileName; // Remove prefix counter
+
     return new File(
         [bitBuilderInstance.getUint8Array().buffer as ArrayBuffer], 
-        files[0].name
-            .split('.').slice(0, -1).join('.')
-            .split('_').slice(1).join('_') || 
-            "decrypted_file",
+        finalName || "decrypted_file",
         { type: 'application/octet-stream' }
     );
 }

@@ -1,11 +1,11 @@
-import { useRef, useState, type DragEvent } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type DragEvent } from "react";
 
 
 interface FileUploadCardProps {
     title: string;
     description: string;
     icon: 'FILE' | 'CHESS_FILE';
-    onNotification?: (message: string, style: 'error' | 'success') => void;
+    onNotification?: (message: string, style: 'error' | 'success', time?: number) => void;
     onFileSelect: ({ file, type }: { file: File, type: 'PGN' | 'OTHER' }) => void;
 }
 
@@ -19,9 +19,32 @@ export function FileUploadCard({
     onNotification,
     onFileSelect
 }: FileUploadCardProps) {
-    const [isDragging, setIsDragging] = useState(false);
+    const [isDragging, setIsDragging] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [fileSelected, setFileSelected] = useState<boolean>(false);
+
+
+    const updateIsDragging = useEffectEvent((isDragging: boolean) => {
+        setIsDragging(isDragging);
+    });
+
+    const updateFileSelected = useEffectEvent((fileSelected: boolean) => {
+        setFileSelected(fileSelected);
+    });
+
+    useEffect(() => {
+        updateIsDragging(false);
+        updateFileSelected(false);
+
+        if (fileInputRef.current !== null) fileInputRef.current.value = '';
+    }, []);
+    
+    useEffect(() => {
+        updateIsDragging(false);
+        updateFileSelected(false);
+        
+        if (fileInputRef.current !== null) fileInputRef.current.value = '';
+    }, [onFileSelect]);
 
 
     const handleFileSelect = async (file: File) => {

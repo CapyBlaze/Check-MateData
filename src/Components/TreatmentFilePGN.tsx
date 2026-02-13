@@ -9,7 +9,7 @@ import { formatFileSize } from "../Utils/formatFileSize";
 interface TreatmentFilePGNProps {
     file: File;
     onReset?: () => void;
-    onNotification?: (message: string, style: 'error' | 'success') => void;
+    onNotification?: (message: string, style: 'error' | 'success', time?: number) => void;
 }
 
 
@@ -44,7 +44,11 @@ export function TreatmentFilePGN({
 
         const runWorker = async () => {
             try {
-                const files = await unzipFile(file);
+                let files: File[] = [file];
+                if (file.name.endsWith('.zip')) {
+                    files = await unzipFile(file);
+                }
+
                 const worker = new DecryptionWorker();
 
                 worker.onmessage = (event) => {
@@ -57,8 +61,6 @@ export function TreatmentFilePGN({
 
                     } else if (type === 'SUCCESS') {
                         hasFinished.current = true;
-                    
-                        setDecryptedFile(payload);
 
                         updateDecryptedFile(payload);
                         worker.terminate();

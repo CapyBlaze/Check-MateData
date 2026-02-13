@@ -9,7 +9,7 @@ import { createPortal } from "react-dom";
 interface TreatmentFileOtherProps {
     file: File;
     onReset?: () => void;
-    onNotification?: (message: string, style: 'error' | 'success') => void;
+    onNotification?: (message: string, style: 'error' | 'success', time?: number) => void;
 }
 
 
@@ -87,7 +87,14 @@ export function TreatmentFileOther({
     
     const downloadEncryptedFile = () => {
         if (dataEncrypt == null) return;
-        if (dataEncrypt.length > 0) saveFile(dataEncrypt, `${fileName}.pgn`);
+
+        if (dataEncrypt.length == 1) {
+            saveFile(dataEncrypt, `${fileName}.pgn`);
+        }
+
+        if (dataEncrypt.length > 1) {
+            saveFile(dataEncrypt, `${fileName}.pgn`);
+        }
     };
 
 
