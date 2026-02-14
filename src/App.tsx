@@ -133,17 +133,29 @@ function App() {
 
 
             {/* Notifications Popups */}
-            <div className="fixed top-4 right-4 z-50 space-y-2">
-                {notifications.map((notification, index) => (
-                    <div key={notification.id} style={{ transform: `translateY(${index * 10}px)` }}>
+            <div className="fixed top-4 right-4 z-50">
+                {notifications.map((notification, index) => {
+                    const getOffset = (idx: number) => {
+                        let offset = 0;
+                        for (let i = 0; i < idx; i++) {
+                            const el = document.getElementById(`notif-${notifications[i].id}`);
+                            offset += el ? el.offsetHeight + 8 : 0;
+                        }
+                        return offset;
+                    };
+
+                    return (
                         <NotificationPopup
+                            key={notification.id}
+                            id={`notif-${notification.id}`}
                             message={notification.message}
-                            style={notification.style}
+                            styleIcon={notification.style}
                             time={notification.time}
                             onClose={() => removeNotification(notification.id)}
+                            style={{ transform: `translateY(${getOffset(index)}px)`}}
                         />
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Copy Link Button */}

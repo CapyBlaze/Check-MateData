@@ -57,6 +57,10 @@ export function Captcha({
 
                 if (Date.now() > data.expiresAt) {
                     onNotification?.('Your patience has expired, please renew it.', 'error', 5);
+                    sessionStorage.removeItem('captcha_patience');
+                    hasChecked.current = true;
+                    captchaRef.current?.classList.add('scale-100');
+                    return;
                 } 
                 
                 if (data.isValid) {

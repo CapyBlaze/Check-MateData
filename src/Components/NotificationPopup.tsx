@@ -1,19 +1,32 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 
 
-interface ErrorPopupProps {
+interface PopupProps {
     message: string;
-    style: 'error' | 'success';
+    styleIcon: 'error' | 'success';
     time?: number;
     onClose: () => void;
+    ref?: React.Ref<HTMLDivElement>;
+    style?: CSSProperties;
+    id?: string;
 }
 
 
-export function NotificationPopup({ message, style, time = 10, onClose }: ErrorPopupProps) {
+export function NotificationPopup({ message, styleIcon, time = 10, onClose, ref, style, id }: PopupProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
+    const closeTimeoutRef = useRef<number | null>(null);
+    const hasClosedRef = useRef(false);
+
 
     const handleClose = useCallback(() => {
+        if (hasClosedRef.current) return;
+        hasClosedRef.current = true;
+
+        if (closeTimeoutRef.current !== null) {
+            clearTimeout(closeTimeoutRef.current);
+        }
+
         setIsLeaving(true);
         setTimeout(() => {
             onClose();
@@ -21,18 +34,25 @@ export function NotificationPopup({ message, style, time = 10, onClose }: ErrorP
     }, [onClose]);
 
     useEffect(() => {
-        setTimeout(() => setIsVisible(true), 10);
+        const appearanceTimer = setTimeout(() => setIsVisible(true), 10);
 
-        const timer = setTimeout(() => {
+        closeTimeoutRef.current = window.setTimeout(() => {
             handleClose();
         }, time * 1000);
 
-        return () => clearTimeout(timer);
-    }, [handleClose, time]);
+        return () => {
+            clearTimeout(appearanceTimer);
+            if (closeTimeoutRef.current !== null) {
+                clearTimeout(closeTimeoutRef.current);
+            }
+        };
+    }, [time, handleClose]); 
 
     
     return (
         <div
+            ref={ref}
+            id={id}
             className={`
                 fixed top-6 right-6 z-50 transform transition-all duration-300 ease-out 
                 ${isVisible && !isLeaving
@@ -40,14 +60,15 @@ export function NotificationPopup({ message, style, time = 10, onClose }: ErrorP
                     : 'translate-x-full opacity-0'
                 }
             `}
+            style={style}
         >
-            <div className={`glass overflow-hidden rounded-xl p-4 pr-12 max-w-sm border shadow-2xl ${style === 'error' ? 'border-red-500/30' : 'border-green-500/30'}`}
-                style={{ boxShadow: style === 'error' ? '0 8px 32px rgba(239, 68, 68, 0.3)' : '0 8px 32px rgba(34, 197, 94, 0.3)' }}
+            <div className={`glass overflow-hidden rounded-xl p-4 pr-12 max-w-sm border shadow-2xl ${styleIcon === 'error' ? 'border-red-500/30' : 'border-green-500/30'}`}
+                style={{ boxShadow: styleIcon === 'error' ? '0 8px 32px rgba(239, 68, 68, 0.3)' : '0 8px 32px rgba(34, 197, 94, 0.3)' }}
             >
                 <div className="flex items-start gap-3">
                     {/* Icon */}
-                    <div className={`w-10 h-10 rounded-xl bg-linear-to-br ${style === 'error' ? 'from-red-500 to-rose-600' : 'from-green-500 to-lime-600'} flex items-center justify-center shrink-0`}>
-                        {style === 'error' ? (
+                    <div className={`w-10 h-10 rounded-xl bg-linear-to-br ${styleIcon === 'error' ? 'from-red-500 to-rose-600' : 'from-green-500 to-lime-600'} flex items-center justify-center shrink-0`}>
+                        {styleIcon === 'error' ? (
                             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
@@ -60,7 +81,7 @@ export function NotificationPopup({ message, style, time = 10, onClose }: ErrorP
 
                     {/* Content */}
                     <div className='w-52'>
-                        <h4 className="text-white font-semibold text-sm">{style === 'error' ? 'Error' : 'Success'}</h4>
+                        <h4 className="text-white font-semibold text-sm">{styleIcon === 'error' ? 'Error' : 'Success'}</h4>
                         <p className="text-gray-400 text-sm mt-0.5">{message}</p>
                     </div>
                 </div>
@@ -78,10 +99,11 @@ export function NotificationPopup({ message, style, time = 10, onClose }: ErrorP
                 {/* Progress bar for auto-close */}
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700 rounded-b-2xl overflow-hidden">
                     <div
-                        className={`h-full rounded-4xl bg-linear-to-r ${style === 'error' ? 'from-red-500 to-rose-600' : 'from-green-500 to-lime-600'}`}
+                        className={`h-full rounded-4xl bg-linear-to-r ${styleIcon === 'error' ? 'from-red-500 to-rose-600' : 'from-green-500 to-lime-600'}`}
                         style={{
                             animation: `shrink ${time}s linear forwards`,
                         }}
+                        onAnimationEnd={handleClose}
                     />
                 </div>
             </div>
