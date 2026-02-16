@@ -30,7 +30,7 @@ export function Captcha({
     
     const verifyCaptcha = () => {
         if (gameChess.fen().split(' ')[0] === gameModel.fen().split(' ')[0]) {
-            onVerify?.(true);
+            setCaptchaStep(2);
 
             const expiration = Date.now() + 10 * 60 * 1000;
             const data = {
@@ -40,6 +40,13 @@ export function Captcha({
             sessionStorage.setItem('captcha_patience', JSON.stringify(data));
 
             onNotification?.('Captcha solved successfully!', 'success', 5);
+
+
+            const timerStep2 = setTimeout(() => {
+                onVerify?.(true);
+            }, 1000);
+
+            return () => clearTimeout(timerStep2);
 
         } else {
             onNotification?.('Captcha verification failed. Please try again.', 'error', 5);
@@ -64,10 +71,15 @@ export function Captcha({
                 } 
                 
                 if (data.isValid) {
-                    onVerify?.(true);
+                    setCaptchaStep(2);
                     onNotification?.('Captcha already solved!', 'success', 5);
                     hasChecked.current = true;
-                    return;
+
+                    const timerStep2 = setTimeout(() => {
+                        onVerify?.(true);
+                    }, 1000);
+
+                    return () => clearTimeout(timerStep2);
                 }
             }
 
@@ -103,6 +115,14 @@ export function Captcha({
                         <div>
                             <svg className="animate-spin h-7 w-7 text-gray-500" viewBox="0 0 109 108" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke="#8d8d8d" d="M104.5 54.5C104.5 45.2064 101.91 36.0967 97.0201 28.1933C92.1304 20.29 85.1348 13.9059 76.8184 9.75751C68.5019 5.60914 59.1939 3.86072 49.939 4.70849C40.6841 5.55625 31.8487 8.96666 24.4243 14.5569C17 20.1472 11.2806 27.696 7.90817 36.3562C4.53572 45.0163 3.64366 54.445 5.33213 63.584C7.02059 72.723 11.2228 81.2105 17.4669 88.094C23.7111 94.9774 31.7502 99.9843 40.6819 102.553" strokeWidth="9" strokeLinecap="round"/>
+                            </svg>
+                        </div>
+                    )}
+
+                    {captchaStep === 2 && (
+                        <div>
+                            <svg className="h-7 w-7 text-gray-500" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M112 184L256 328L400 184" stroke="#2ca50e" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                         </div>
                     )}
@@ -159,7 +179,7 @@ export function Captcha({
                         </div>
                     </div>
 
-                    <div className="bg-[#252328] p-4 pb-2">
+                    <div className="bg-[#252328] p-4 pb-2 overflow-y-scroll lg:overflow-y-auto max-h-100 lg:max-h-max flex flex-col items-center">
                         <div className="flex flex-col lg:flex-row flex-nowrap gap-8">
                             <RenderChessBoard key={`model-${refreshKey}`} game={gameModel} isModel={true} />
 
@@ -204,7 +224,7 @@ export function Captcha({
                         </div>
                     </div>
                 </div>,
-                document.body
+                document.getElementById('root') || document.body
             )}
         </>
     )
@@ -277,7 +297,7 @@ function RenderChessBoard({ game, isModel, className }: { game: Chess, isModel?:
 
 
     return (
-        <div draggable="false" style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)' }} className={`noDrag relative rounded-lg overflow-hidden ${className}`}>
+        <div draggable="false" style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)' }} className={`noDrag relative rounded-lg overflow-hidden w-[calc(48px*8)] ${className}`}>
             {boardState.map((row, rowIndex) => 
                 row.map((cell, colIndex) => (
                     <div 

@@ -90,12 +90,14 @@ export async function decryptFile(
         encodingInfo: encodingInfo
     });
 
-    const fileName = files[0].name.split('.').slice(0, -1).join('.') // Remove extension
-    const finalName = fileName.includes('_') ? fileName.split('_').slice(1).join('_') : fileName; // Remove prefix counter
+    let fileName = files[0].name
+    fileName = fileName.includes('_') ? fileName.split('_').slice(1).join('_') : fileName; // Remove prefix counter
+    fileName = fileName.includes('.') ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName; // Remove extension
+    fileName += chess.getHeaders().Black ? `.${chess.getHeaders().Black.toLowerCase().split(' ')[0]}` : '.bin'; // Add extension based on header or default to .bin
 
     return new File(
         [bitBuilderInstance.getUint8Array().buffer as ArrayBuffer], 
-        finalName || "decrypted_file",
+        fileName || "decrypted_file",
         { type: 'application/octet-stream' }
     );
 }

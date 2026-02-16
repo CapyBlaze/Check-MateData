@@ -17,12 +17,13 @@ export interface EncryptionProgress {
 }
 
 
-function setChessHeader(chess: Chess) {
+function setChessHeader(chess: Chess, fileExtension: string = 'bin') {
     chess.setHeader('Event', 'Check-MateData');
-    chess.setHeader('Site', 'Local party');
+    chess.setHeader('Site', 'Web party');
     chess.setHeader('Date', new Date().toISOString().split('T')[0].replace(/-/g, '.'));
     chess.setHeader('White', 'Player');
-    chess.setHeader('Black', 'Bot');
+    chess.setHeader('Black', fileExtension.toUpperCase() + ' File');
+    chess.setHeader('Time', new Date().toLocaleTimeString());
 }
 
 
@@ -82,7 +83,7 @@ export async function encryptFile(
         
 
         if (chess.isGameOver() || endGame) {
-            setChessHeader(chess);
+            setChessHeader(chess, file.name.split('.').pop());
             chess.setHeader('Round', partyArray.length + 1 + '');
             
             if (chess.isDraw() || chess.isStalemate()) {
@@ -137,7 +138,7 @@ export async function encryptFile(
     }
 
     if (chess.history({ verbose: false }).length > 0) {
-        setChessHeader(chess);
+        setChessHeader(chess, file.name.split('.').pop());
         chess.setHeader('Round', partyArray.length + 1 + '');
         chess.setHeader('Result', '*');
 

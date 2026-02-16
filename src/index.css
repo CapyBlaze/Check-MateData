@@ -9,6 +9,9 @@
     --color-accent-2: #8b5cf64d;
 }
 
+html {
+    overflow: hidden;
+}
 
 :root {
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -23,6 +26,8 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+    overflow-y: hidden;
 }
 
 body {
@@ -36,7 +41,7 @@ body {
     min-height: 100vh;
 }
 
-::-webkit-scrollbar {
+body::-webkit-scrollbar {
     display: none;
 }
 
