@@ -4,6 +4,7 @@ import { saveFile } from "../Services/saveFile";
 import EncryptionWorker from '../worker/encrypt.worker?worker';
 import { formatFileSize } from "../Utils/formatFileSize";
 import { createPortal } from "react-dom";
+import { Save } from "./Save";
 
 
 interface TreatmentFileOtherProps {
@@ -22,6 +23,7 @@ export function TreatmentFileOther({
     const [encryptionProgress, setEncryptionProgress] = useState<EncryptionProgress | null>(null);
     const [dataEncrypt, setDataEncrypt] = useState<string[] | null>(null);
     const [fileName, setFileName] = useState<string>("");
+    const [showSaveFile, setShowSaveFile] = useState(false);
 
     const progress = encryptionProgress?.remainingPercentage ?? 0;
     const isCompleted = encryptionProgress?.stage === 'ENDED';
@@ -196,7 +198,7 @@ export function TreatmentFileOther({
                         <button 
                             className="pop-in opacity-50 hover:opacity-80! absolute bottom-28 right-4 cursor-pointer transition-all duration-300"
                             onClick={() => {
-                                console.log("ddddd");
+                                setShowSaveFile(true);
                             }}
                         >
                             <svg className="w-9 h-auto" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -206,6 +208,10 @@ export function TreatmentFileOther({
                         document.getElementById('root') || document.body
                     )}
                 </>
+            )}
+
+            {showSaveFile && (
+                <Save onClose={() => setShowSaveFile(false)} />
             )}
         </>
     );

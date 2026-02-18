@@ -138,6 +138,11 @@ body::-webkit-scrollbar {
     justify-content: center;
 }
 
+.chess-piece-static {
+    font-size: 4rem;
+    filter: drop-shadow(0 10px 20px rgba(139, 92, 246, 0.4));
+}
+
 .chess-piece-animated {
     font-size: 4rem;
     animation: float 4s ease-in-out infinite;
