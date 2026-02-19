@@ -4,8 +4,6 @@ import { Chess } from "chess.js";
 
 export interface EncryptionProgress {
     stage?: 'COMPRESSING' | 'ENCODING' | 'ENDED';
-    totalBytes?: number;
-    remainingByte?: number;
     remainingPercentage?: number;
     encodingInfo?: {
         numberMatches: number;
@@ -38,6 +36,7 @@ export async function encryptFile(
     })
 
 
+
     let dataFile: Uint8Array;
     try {
         const arrayBuffer = await file.arrayBuffer();
@@ -53,12 +52,6 @@ export async function encryptFile(
     }
 
 
-    const binaryString = Array.from(dataFile)
-        .map(byte => byte.toString(2).padStart(8, '0'))
-        .join('');
-    const binaryArray = binaryString.split('');
-    const binaryLength = binaryArray.length;
-    
 
     const chess = new Chess();
     const partyArray: string[] = [];
@@ -73,14 +66,23 @@ export async function encryptFile(
     };
 
 
-    while (binaryArray.length > 0) {
+
+    const guardedData = new Uint8Array([1, ...dataFile]);
+
+    let fileBigInt = BigInt("0x" + Array.from(guardedData)
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join(''));
+
+    const initialBitCount = fileBigInt.toString(2).length;
+
+
+    while (fileBigInt > 0n) {
+        const currentBitCount = fileBigInt === 0n ? 0 : fileBigInt.toString(2).length;
+
         onProgress?.({
             stage: 'ENCODING',
-            totalBytes: binaryLength,
-            remainingByte: binaryArray.length,
-            remainingPercentage: 100 - ((binaryArray.length / binaryLength) * 100)
+            remainingPercentage: 100 - ((currentBitCount / initialBitCount) * 100)
         });
-        
 
         if (chess.isGameOver() || endGame) {
             setChessHeader(chess, file.name.split('.').pop());
@@ -114,29 +116,28 @@ export async function encryptFile(
         }
 
 
+
         const movesList = chess.moves();
-        const numberMoves = movesList.length;
-        let numberBits;
-        if (numberMoves == 1) {
-            chess.move(movesList[0]);
+        const n = BigInt(movesList.length);
+
+        if (n > 1n) {
+            const moveIndex = Number(fileBigInt % n);
+            fileBigInt = fileBigInt / n;
+            chess.move(movesList[moveIndex]);
             encodingInfo.numberMoves++;
-            continue;
 
-        } else if (numberMoves > 1) {
-            numberBits = Math.floor(Math.log2(numberMoves));
+        } else if (n === 1n) {
+            chess.move(movesList[0]);
 
-        } else if (numberMoves <= 0) {
+        } else {
             endGame = true;
-            continue;
         }
 
-        const bitsToRead = binaryArray.splice(0, numberBits);
-        const moveIndex = parseInt(bitsToRead.join(''), 2);
-        
-        chess.move(movesList[moveIndex]);
-        encodingInfo.numberMoves++;
+        if (fileBigInt === 0n) break;
     }
 
+
+        
     if (chess.history({ verbose: false }).length > 0) {
         setChessHeader(chess, file.name.split('.').pop());
         chess.setHeader('Round', partyArray.length + 1 + '');
@@ -148,10 +149,9 @@ export async function encryptFile(
     }
 
     
+
     onProgress?.({
         stage: 'ENDED',
-        totalBytes: binaryLength,
-        remainingByte: binaryArray.length,
         remainingPercentage: 100,
         encodingInfo: encodingInfo
     });
