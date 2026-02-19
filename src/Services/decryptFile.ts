@@ -64,7 +64,6 @@ export async function decryptFile(
             const moveIndex = movesList.indexOf(move);
 
             if (moveIndex === -1) {
-                console.error("Erreur de synchro au coup :", move, "Coups possibles :", movesList);
                 throw new Error(`Move invalide : ${move}`);
             }
 

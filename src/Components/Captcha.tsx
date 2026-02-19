@@ -18,8 +18,8 @@ export function Captcha({
     const [captchaStep, setCaptchaStep] = useState<number>(0);
 
     
-    const gameModel = new Chess("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/2N5/PPPP1PPP/R1BQK1NR w KQkq - 0 1");
-    const gameChess = new Chess();
+    const gameModel = useMemo(() => new Chess("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/2N5/PPPP1PPP/R1BQK1NR w KQkq - 0 1"), []);
+    const gameChess = useMemo(() => new Chess(), []);
 
 
 
