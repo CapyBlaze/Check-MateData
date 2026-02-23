@@ -7,5 +7,5 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
-  base: '/check-matedata'
+  base: '/Check-MateData'
 })
