@@ -9,7 +9,7 @@ export function Save({
     return (
         <>
             {createPortal(
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 max-w-2xl mx-auto p-6 glass rounded-t-xl border-2 border-[#ffffff11] bg-slate-900 text-slate-100 rounded-xl shadow-2xl">
+                <div className="absolute w-full h-full sm:h-auto top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 max-w-2xl mx-auto p-6 glass rounded-t-xl border-2 border-[#ffffff11] bg-slate-900 text-slate-100 rounded-xl shadow-2xl">
                     <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                         <div className='noSelect chess-piece-static'>♞</div>
                         How to save your PGN files

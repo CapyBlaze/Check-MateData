@@ -119,8 +119,9 @@ export function Captcha({
                         </div>
                     )}
 
+                    {/* Checked */}
                     {captchaStep === 2 && (
-                        <div>
+                        <div className='-scale-x-100'>
                             <svg className="h-7 w-7 text-gray-500" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M112 184L256 328L400 184" stroke="#2ca50e" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
@@ -154,14 +155,14 @@ export function Captcha({
             {/* CAPTCHA Verification */}
             {captchaStep === 1 && createPortal(
                 <div ref={captchaRef} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-in-out z-10 scale-0 overflow-hidden rounded-md" draggable="false">
-                    <div className="bg-[#422e5e] p-4 flex flex-row justify-between items-center">
+                    <div className="bg-[#422e5e] p-4 flex flex-row justify-between items-center gap-5">
                         <div>
-                            <h1 className="text-white font-bold text-2xl">Verify that you have the patience</h1>
-                            <p className="text-white">Replicate the chessboard pattern from left to right to solve the puzzle.</p>
+                            <h1 className="text-white font-bold text-lg sm:text-xl lg:text-2xl">Verify that you have the patience</h1>
+                            <p className="text-white text-sm sm:text-base lg:text-lg">Replicate the chessboard pattern from left to right to solve the puzzle.</p>
                         </div>
 
-                        <div className="h-14 w-14">
-                            <svg className="h-14 w-14" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <div className="h-10 w-10 sm:h-14 sm:w-14">
+                            <svg className="h-10 w-10 sm:h-14 sm:w-14" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M34.4716 65H0.00778261V118L14.0832 104.054C20.4131 111.942 28.5705 118.277 37.9412 122.455C52.0333 128.737 67.9206 129.717 82.6779 125.214C95.3374 121.351 106.434 113.677 114.5 103.316L89.046 79.6725C85.2677 85.7105 79.4353 90.1804 72.6226 92.2591C65.8099 94.3378 58.4756 93.8855 51.97 90.9853C46.5199 88.5557 41.9588 84.5451 38.8539 79.5114L53.5 65H34.4716Z" fill="#A5A5A5"/>
                                 <path d="M0.00778261 65H34.4716C34.3677 61.9326 34.7415 58.844 35.6018 55.8472C37.5672 49.001 41.9398 43.0953 47.9143 39.2174C48.0414 39.1349 48.1691 39.0534 48.2973 38.973L63.5 54V34.4588V0.00179815L63.0246 0.0072776L9.5 0.624251L23.49 14.4525C13.4497 22.6612 6.09387 33.7685 2.48483 46.3398C0.730207 52.4516 -0.0901335 58.7398 0.00778261 65Z" fill="#A072D0"/>
                                 <path d="M63.5 0.00179815V34.4588C65.0355 34.4328 66.5789 34.5265 68.1165 34.7428C75.1698 35.7353 81.6272 39.2423 86.2997 44.6183C87.3085 45.779 88.2196 47.0101 89.0279 48.2986L72.9171 64H93.5453H128V10.3168L113.96 24C113.423 23.3288 112.871 22.6673 112.305 22.016C102.183 10.3708 88.1956 2.77397 72.9171 0.624251C69.7809 0.182978 66.6336 -0.0226791 63.5 0.00179815Z" fill="#653894"/>
@@ -297,7 +298,7 @@ function RenderChessBoard({ game, isModel, className }: { game: Chess, isModel?:
 
 
     return (
-        <div draggable="false" style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)' }} className={`noDrag relative rounded-lg overflow-hidden w-[calc(48px*8)] ${className}`}>
+        <div draggable="false" style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)' }} className={`noDrag relative rounded-lg overflow-hidden w-[calc(32px * 8)] sm:w-[calc(40px * 8)] lg:w-[calc(48px * 8)] ${className}`}>
             {boardState.map((row, rowIndex) => 
                 row.map((cell, colIndex) => (
                     <div 
@@ -305,7 +306,7 @@ function RenderChessBoard({ game, isModel, className }: { game: Chess, isModel?:
                         id={`${isModel ? 'model-' : ''}${String.fromCharCode(97 + colIndex)}${8 - rowIndex}`} 
                         className={`
                             ${(rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark'} 
-                            w-12 h-12 relative flex items-center justify-center
+                            w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 relative flex items-center justify-center
                             ${!isModel && possibleMoves.includes(
                                 `${String.fromCharCode(97 + colIndex)}${8 - rowIndex}` as Square
                             ) ? 'selectableSquareChessboard' : ''}
