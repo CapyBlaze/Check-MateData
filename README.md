@@ -4,15 +4,13 @@
 
 <p align="center">
     <img src="https://img.shields.io/github/license/CapyBlaze/Check-MateData?style=flat-square" alt="LICENSE"/>
-    <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=flat-square&logo=vite" alt="https://vitejs.dev/"/>
+    <img src="https://img.shields.io/badge/Vite-7.2-646CFF?style=flat-square&logo=vite" alt="https://vitejs.dev/"/>
     <img src="https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react" alt="https://reactjs.org/"/>
-    <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript" alt="https://www.typescriptlang.org/"/>
-    <img src="https://img.shields.io/badge/tailwindcss-4.x-38B2AC?style=flat-square&logo=tailwind-css" alt="https://tailwindcss.com/"/>
+    <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript" alt="https://www.typescriptlang.org/"/>
+    <img src="https://img.shields.io/badge/tailwindcss-4.1-38B2AC?style=flat-square&logo=tailwind-css" alt="https://tailwindcss.com/"/>
 </p>
 
-<!-- Web tool to encrypt, compress, and convert files into chess games, then restore the original file from a PGN. -->
-
-Check-MateData is a web tool that encrypts, compresses, and transforms files into chess games, then restores files from those games. The app runs entirely in the browser and uses Web Workers to handle heavy tasks without blocking the UI.
+A secure web tool for encrypting, compressing, and encoding any file in chess notation (PGN) format. Restore your files instantly, all 100% client-side for complete privacy.
 
 <div align="center">
     <h3>
@@ -150,26 +148,24 @@ This section precisely describes the protocol implemented by [src/Services/encry
 
 ### 1) Input and data preparation
 
-- The file is read into a `Uint8Array` and converted to a continuous binary string (8 bits per byte, left-padded).
+- The file is read into a `Uint8Array`.
+- A guard byte `0x01` is prepended to preserve leading zeros during reconstruction.
+- The result is converted to a single big integer using hexadecimal encoding.
 - No compression or encryption is applied in the current implementation.
 
-### 2) Encoding bits -> chess moves (PGN)
+### 2) Encoding data -> chess moves (PGN)
 
-The encoder transforms the bitstream into a sequence of legal chess moves, following these rules:
+The encoder transforms the big integer into a sequence of legal chess moves, using a mixed-radix base defined by the number of legal moves at each position:
 
 1. Initialize a standard chessboard (initial position).
 
-2. List the legal moves for the current position.
+2. List the legal moves for the current position and let `n = number_of_legal_moves`.
 
 3. If the list is empty, force the end of the game (flag `endGame`).
-     - Otherwise, if there is only one legal move, play it directly without consuming bits, because there is no choice and thus no way to distinguish 0 from 1.
-     - Otherwise, compute `k = floor(log2(number_of_legal_moves))`, which represents the number of bits to read to pick a move among the available options.
+    - If there is only one legal move, play it directly without consuming any data.
+    - If `n > 1`, select `index = value mod n`, play `movesList[index]`, then update `value = floor(value / n)`.
 
-4. Read `k` bits from the stream and convert them into index `i`.
-
-5. Play the move `movesList[i]`.
-
-6. Repeat until the bitstream is exhausted.
+4. Repeat until the integer value becomes `0`.
 
 When a game ends (or is forced), a PGN is finalized and a new game starts:
 
@@ -182,23 +178,24 @@ When a game ends (or is forced), a PGN is finalized and a new game starts:
 - Encoding output: an array of PGN strings (one game per element).
 - Each PGN contains the move list representing the bitstream.
 
-### 3) Decoding chess moves -> bits
+### 3) Decoding chess moves -> data
 
-Decoding does the reverse, strictly following the same rules:
+Decoding reverses the same mixed-radix process:
 
 1. Read one or more PGN files.
 2. Split games with the separator `\n+(?=\[Event ")`.
-3. For each game, load the PGN and replay moves one by one.
-4. Before each move, list legal moves for the current position.
-5. If `n > 1`, compute `k = floor(log2(n))` and find the index `i` of the played move.
-6. If `i` is valid and `i < 2^k`, convert `i` to binary on `k` bits and append them to the stream.
-7. Repeat until the end of the game.
+3. For each game (processed from last to first), load the PGN and replay moves one by one.
+4. Before each move, list legal moves for the current position and let `n = number_of_legal_moves`.
+5. If `n > 1`, record the move index and `n` (the radix for that step).
+6. Rebuild the integer by iterating recorded moves from last to first: `value = value * n + index`.
 
 #### File reconstruction
 
-- The reconstructed bits are converted to a `Uint8Array`.
-- The final file is created using the original name, but without the original extension and without the prefix before the first `_`.
-- Example: `001_photo.png.pgn` -> `photo.png`.
+- The final integer is converted back to a byte array via hex, then the leading guard byte is removed.
+- The final file name is derived from the first input PGN file name:
+  - Remove any prefix before the first `_` (counter).
+  - Remove the `.pgn` extension.
+  - Add the original extension from the PGN header `Black` field (first word), or `.bin` if missing.
 - If no name can be derived, the default name is `decrypted_file`.
 
 ### 4) Exposed progress info
@@ -213,7 +210,7 @@ These metrics are returned through the `onProgress` callbacks in both services.
 
 ### 5) Security and limits
 
-- Encryption is handled client-side; no data is sent.
+- Encoding is handled client-side; no data is sent.
 - PGN files can become large for big inputs, which impacts performance, so there is a practical file size limit (50KB).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
