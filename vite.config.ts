@@ -7,5 +7,8 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  build: {
+    cssMinify: false, 
+  },
   base: '/Check-MateData'
 })
