@@ -2,15 +2,28 @@
 
 
 @theme {
-    --color-bg-start: #0f172b;
-    --color-bg-middle: #3c0366;
-    --color-bg-end: #0f172b;
     --color-accent: #8b5cf6cc;
     --color-accent-2: #8b5cf64d;
 }
 
+
 html {
     overflow: hidden;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    place-items: center;
+
+    min-width: 320px;
+    min-height: 100vh;
+}
+
+body::-webkit-scrollbar {
+    display: none;
 }
 
 :root {
@@ -30,21 +43,6 @@ html {
     overflow-y: hidden;
 }
 
-body {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    place-items: center;
-
-    min-width: 320px;
-    min-height: 100vh;
-}
-
-body::-webkit-scrollbar {
-    display: none;
-}
-
 ::selection {
     background-color: var(--color-accent);
     color: #ffffff;
@@ -54,6 +52,8 @@ body::-webkit-scrollbar {
     background-color: var(--color-accent);
     color: #ffffff;
 }
+
+
 
 .glass {
     background: #191919b3;
@@ -101,8 +101,8 @@ body::-webkit-scrollbar {
 
 .pop-in {
     opacity: 0;
-    animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    animation-delay: 0.5s;
+    animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation-delay: 0.75s;
 }
 
 
@@ -156,6 +156,7 @@ body::-webkit-scrollbar {
     filter: drop-shadow(0 10px 30px rgba(252, 187, 23, 0.675));
 }
 
+
 /* Progress Bar */
 .progress-bar-container {
     padding: 0 10px;
@@ -182,6 +183,7 @@ body::-webkit-scrollbar {
     background: linear-gradient(90deg, #22c55e, #16a34a);
     animation: none;
 }
+
 
 /* Download Button */
 .download-button {
@@ -220,6 +222,7 @@ body::-webkit-scrollbar {
 .selectableSquareChessboard:hover {
     background-color: rgb(139 107 237 / 46%) !important;
 }
+
 
 /* Checkbox Animation */
 input[type="checkbox"] {
@@ -335,10 +338,19 @@ input[type="checkbox"]:checked::after {
 @keyframes pop-in {
     0% { 
         opacity: 0; 
-        transform: scale(0.5) translateY(20px); 
+        transform: scale(0.3) translateY(20px); 
+        filter: blur(4px);
+    }
+    60% { 
+        opacity: 0.8;
+        transform: scale(1.08) translateY(-4px); 
+    }
+    80% { 
+        transform: scale(0.95) translateY(2px); 
     }
     100% { 
-        opacity: 0.5;
+        opacity: 0.8;
         transform: scale(1) translateY(0); 
+        filter: blur(0);
     }
 }

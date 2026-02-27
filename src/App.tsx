@@ -63,7 +63,7 @@ function App() {
                     }
                 `}
             >
-                {/* Step 1 */}
+                {/* Step 1: UPLOAD */}
                 <div className="w-screen flex flex-col lg:flex-row gap-6 justify-center items-center">
                     <FileUploadCard
                         title="File to PGN"
@@ -108,14 +108,14 @@ function App() {
                     />
                 </div>
 
-                {/* Step 2 */}
+                {/* Step 2: CAPTCHA */}
                 <div className="w-screen flex flex-col lg:flex-row gap-6 justify-center items-center">
                     {step === 'CAPTCHA' && file && (
                         <Captcha onVerify={() => setStep("TREATMENT")} onNotification={addNotification} />
                     )}
                 </div>
                 
-                {/* Step 3 */}
+                {/* Step 3: TREATMENT */}
                 <div className="w-screen flex flex-col lg:flex-row gap-6 justify-center items-center">
                     {step === 'TREATMENT' && file && (
                         <>

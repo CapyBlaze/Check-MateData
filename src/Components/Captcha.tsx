@@ -1,6 +1,7 @@
 import { Chess, type Square } from 'chess.js';
 import { useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from "framer-motion";
 
 
 export function Captcha({ 
@@ -77,7 +78,7 @@ export function Captcha({
 
                     const timerStep2 = setTimeout(() => {
                         onVerify?.(true);
-                    }, 1000);
+                    }, 1500);
 
                     return () => clearTimeout(timerStep2);
                 }
@@ -98,35 +99,50 @@ export function Captcha({
             {/* CAPTCHA Checkbox */}
             <div className="glass m-3 border border-[#4b5563] rounded-sm p-4 flex items-center gap-8">
                 <div className="flex flex-row gap-4 items-center">
-                    {/* Checkbox */}
-                    {captchaStep === 0 && (
-                        <input type="checkbox" name="notImpatientCheckbox" id="notImpatientCheckbox"
-                            onChange={(e) => {
-                                if (e.target.checked) {
-                                    e.target.disabled = true; 
-                                    setCaptchaStep(1);
-                                }
-                            }}
-                        />
-                    )}
+                    <AnimatePresence mode="wait">
+                        {/* Checkbox */}
+                        {captchaStep === 0 && (
+                            <motion.input
+                                key="step0"
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                type="checkbox"
+                                onChange={(e) => {
+                                    if (e.target.checked) {
+                                        e.target.disabled = true; 
+                                        
+                                        setTimeout(() => {
+                                            setCaptchaStep(1);
+                                        }, 400);
+                                    }
+                                }}
+                            />
+                        )}
 
-                    {/* Loading */}
-                    {captchaStep === 1 && (
-                        <div>
-                            <svg className="animate-spin h-7 w-7 text-gray-500" viewBox="0 0 109 108" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke="#8d8d8d" d="M104.5 54.5C104.5 45.2064 101.91 36.0967 97.0201 28.1933C92.1304 20.29 85.1348 13.9059 76.8184 9.75751C68.5019 5.60914 59.1939 3.86072 49.939 4.70849C40.6841 5.55625 31.8487 8.96666 24.4243 14.5569C17 20.1472 11.2806 27.696 7.90817 36.3562C4.53572 45.0163 3.64366 54.445 5.33213 63.584C7.02059 72.723 11.2228 81.2105 17.4669 88.094C23.7111 94.9774 31.7502 99.9843 40.6819 102.553" strokeWidth="9" strokeLinecap="round"/>
-                            </svg>
-                        </div>
-                    )}
+                        {/* Loading */}
+                        {captchaStep === 1 && (
+                            <motion.div
+                                key="step1"
+                                initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                            >
+                                <svg className="animate-spin h-7 w-7 text-gray-500" viewBox="0 0 109 108" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke="#8d8d8d" d="M104.5 54.5C104.5 45.2064 101.91 36.0967 97.0201 28.1933C92.1304 20.29 85.1348 13.9059 76.8184 9.75751C68.5019 5.60914 59.1939 3.86072 49.939 4.70849C40.6841 5.55625 31.8487 8.96666 24.4243 14.5569C17 20.1472 11.2806 27.696 7.90817 36.3562C4.53572 45.0163 3.64366 54.445 5.33213 63.584C7.02059 72.723 11.2228 81.2105 17.4669 88.094C23.7111 94.9774 31.7502 99.9843 40.6819 102.553" strokeWidth="9" strokeLinecap="round"/>
+                                </svg>
+                            </motion.div>
+                        )}
 
-                    {/* Checked */}
-                    {captchaStep === 2 && (
-                        <div className='-scale-x-100'>
-                            <svg className="h-7 w-7 text-gray-500" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M112 184L256 328L400 184" stroke="#2ca50e" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                        </div>
-                    )}
+                        {/* Checked */}
+                        {captchaStep === 2 && (
+                            <motion.div
+                                key="step2"
+                                initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
+                                // className='-scale-x-100'
+                            >
+                                <svg className="h-7 w-7 text-gray-500" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M112 184L256 328L400 184" stroke="#2ca50e" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <p>I'm not impatient</p>
                 </div>
@@ -322,10 +338,10 @@ function RenderChessBoard({ game, isModel, className }: { game: Chess, isModel?:
                         {/* Chess Piece */}
                         {cell && (
                             <img 
-                            draggable="false" 
-                            src={`/check-matedata/Chess_${cell.type}${cell.color}45.svg`} 
-                            alt={cell.type} 
-                            className='z-50 noSelect'
+                                draggable="false" 
+                                src={`${import.meta.env.BASE_URL}/Chess_${cell.type}${cell.color}45.svg`} 
+                                alt={cell.type} 
+                                className='z-50 noSelect'
                             />
                         )}
 

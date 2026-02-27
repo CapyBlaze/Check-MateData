@@ -196,7 +196,7 @@ export function TreatmentFileOther({
                 <>
                     {createPortal(
                         <button 
-                            className="pop-in opacity-50 hover:opacity-80! absolute bottom-28 right-4 cursor-pointer transition-all duration-300"
+                            className="pop-in opacity-50 hover:opacity-90! absolute bottom-28 right-4 cursor-pointer transition-all duration-300"
                             onClick={() => {
                                 setShowSaveFile(true);
                             }}
