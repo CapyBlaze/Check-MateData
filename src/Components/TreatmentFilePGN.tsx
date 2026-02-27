@@ -91,7 +91,7 @@ export function TreatmentFilePGN({
 
     useEffect(() => {
         if (isCompleted && decryptedFile && !hasNotifiedSuccess.current) {
-            onNotification?.(`Encoded in ${decryptionProgress?.encodingInfo?.numberMatches} matches and ${decryptionProgress?.encodingInfo?.numberMoves} moves.`, 'success');
+            onNotification?.(`Decoded in ${decryptionProgress?.encodingInfo?.numberMatches} matches and ${decryptionProgress?.encodingInfo?.numberMoves} moves.`, 'success');
             hasNotifiedSuccess.current = true;
         }
     }, [isCompleted, decryptedFile, onNotification, decryptionProgress]);
