@@ -19,7 +19,16 @@ export function Captcha({
     const [captchaStep, setCaptchaStep] = useState<number>(0);
 
     
-    const gameModel = useMemo(() => new Chess("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/2N5/PPPP1PPP/R1BQK1NR w KQkq - 0 1"), []);
+    const modelFen: string[] = [
+        "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/2N5/PPPP1PPP/R1BQK1NR w KQkq - 0 1",
+        "rnbqk2r/pppp1ppp/4pn2/2b5/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQkq - 2 4",
+        "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 2 3"
+    ]
+
+    const [gameModel] = useState(() => {
+        const randomIndex = Math.floor(Math.random() * modelFen.length);
+        return new Chess(modelFen[randomIndex]);
+    });
     const gameChess = useMemo(() => new Chess(), []);
 
 
@@ -52,6 +61,25 @@ export function Captcha({
         } else {
             onNotification?.('Captcha verification failed. Please try again.', 'error', 5);
         }
+    }
+
+    const skipVerification = () => {
+        setCaptchaStep(2);
+
+        const expiration = Date.now() + 10 * 60 * 1000;
+        const data = {
+            isValid: true,
+            expiresAt: expiration
+        };
+        sessionStorage.setItem('captcha_patience', JSON.stringify(data));
+
+        onNotification?.('A captcha that can be bypassed?! But what\n\'s the point of that?', 'error', 10);
+
+        const timerStep2 = setTimeout(() => {
+            onVerify?.(true);
+        }, 1000);
+
+        return () => clearTimeout(timerStep2);
     }
 
 
@@ -212,6 +240,7 @@ export function Captcha({
                                 {/* Reload */}
                                 <button className="cursor-pointer flex items-center justify-center opacity-70 hover:opacity-90 transition" aria-label="Reload Captcha"
                                     onClick={reloadCaptcha}
+                                    title='Reload Captcha'
                                 >
                                     <svg width="24px" height="24px" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M400 148L378.88 123.43C360.973 104.622 339.426 89.6537 315.55 79.4368C291.674 69.2199 265.97 63.9678 240 64.0001C134 64.0001 48 150 48 256C48 362 134 448 240 448C279.71 447.997 318.443 435.688 350.87 412.766C383.296 389.843 407.821 357.435 421.07 320" stroke="white" strokeWidth="32" strokeMiterlimit="10" strokeLinecap="round"/>
@@ -222,12 +251,22 @@ export function Captcha({
                                 {/* Help */}
                                 <button className="cursor-pointer flex items-center justify-center opacity-70 hover:opacity-90 transition" aria-label="Help with Captcha"
                                     onClick={() => window.open('https://en.wikipedia.org/wiki/Rules_of_chess', '_blank')}
+                                    title='Help with Captcha'
                                 >
                                     <svg width="24px" height="24px" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M248 64C146.39 64 64 146.39 64 248C64 349.61 146.39 432 248 432C349.61 432 432 349.61 432 248C432 146.39 349.61 64 248 64Z" stroke="white" strokeWidth="32" strokeMiterlimit="10"/>
                                         <path d="M220 220H252V336" stroke="white" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"/>
                                         <path d="M208 340H296" stroke="white" strokeWidth="32" strokeMiterlimit="10" strokeLinecap="round"/>
                                         <path d="M248 130C242.858 130 237.831 131.525 233.555 134.382C229.28 137.239 225.947 141.299 223.979 146.05C222.011 150.801 221.496 156.029 222.5 161.072C223.503 166.116 225.979 170.749 229.615 174.385C233.251 178.021 237.884 180.497 242.928 181.5C247.971 182.504 253.199 181.989 257.95 180.021C262.701 178.053 266.761 174.721 269.618 170.445C272.475 166.169 274 161.142 274 156C274 149.104 271.261 142.491 266.385 137.615C261.509 132.739 254.896 130 248 130Z" fill="white"/>
+                                    </svg>
+                                </button>
+
+                                <button className="cursor-pointer flex items-center justify-center opacity-70 hover:opacity-90 transition" aria-label="Skip the verification"
+                                    onClick={skipVerification}
+                                    title='Skip the verification'
+                                >
+                                    <svg width="24px" height="24px" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M400 64C395.757 64 391.687 65.6857 388.686 68.6863C385.686 71.6869 384 75.7565 384 80V216.43L151.23 77.11C145.854 73.8396 139.698 72.0734 133.405 71.996C127.113 71.9186 120.915 73.5329 115.46 76.67C103.46 83.47 96 96.63 96 111V401C96 415.37 103.46 428.53 115.46 435.33C120.916 438.465 127.114 440.077 133.407 439.997C139.699 439.918 145.854 438.151 151.23 434.88L384 295.57V432C384 436.243 385.686 440.313 388.686 443.314C391.687 446.314 395.757 448 400 448C404.243 448 408.313 446.314 411.314 443.314C414.314 440.313 416 436.243 416 432V80C416 75.7565 414.314 71.6869 411.314 68.6863C408.313 65.6857 404.243 64 400 64Z" fill="white"/>
                                     </svg>
                                 </button>
                             </div>
